@@ -1,0 +1,5 @@
+package-json.lock
+data/
+dist/
+node_modules/
+bruno-collection/
