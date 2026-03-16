@@ -1,0 +1,57 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum LoanStatus {
+  ACTIVE
+  RETURNED
+}
+
+model Book {
+  id        String  @id @default(cuid())
+  title     String
+  author    String
+  year      Int
+  isbn      String  @unique
+  available Boolean @default(true)
+  loans     Loan[]
+}
+
+model User {
+  id            String         @id @default(cuid())
+  name          String
+  email         String         @unique
+  passwordHash  String
+  role          UserRole       @default(USER)
+  loans         Loan[]
+  refreshTokens RefreshToken[]
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Loan {
+  id         String     @id @default(cuid())
+  userId     String
+  bookId     String
+  loanDate   DateTime   @default(now())
+  returnDate DateTime?
+  status     LoanStatus @default(ACTIVE)
+  user       User       @relation(fields: [userId], references: [id])
+  book       Book       @relation(fields: [bookId], references: [id])
+}

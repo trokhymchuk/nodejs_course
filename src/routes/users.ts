@@ -1,22 +1,15 @@
 import express from "express";
 
 import * as UserController from "../controllers/userController";
-
-import { validate } from "../middleware/validate";
-import { createUserSchema } from "../schemas/user.schema";
+import { auth } from "../middleware/auth.middleware";
+import { requireRole } from "../middleware/role.middleware";
 
 const router = express.Router();
-const jsonParser = express.json();
 
-router.get("/", UserController.getUsers);
+router.get("/me", auth, UserController.getMe);
 
-router.get("/:id", UserController.getUserById);
+router.get("/", auth, requireRole("ADMIN"), UserController.getUsers);
 
-router.post(
-  "/",
-  jsonParser,
-  validate(createUserSchema),
-  UserController.createUser,
-);
+router.get("/:id", auth, requireRole("ADMIN"), UserController.getUserById);
 
 export default router;

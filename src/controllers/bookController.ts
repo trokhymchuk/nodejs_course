@@ -1,58 +1,82 @@
 import type { Request, Response } from "express";
 
 import type { CreateBookDto, UpdateBookDto } from "../schemas/book.schema";
-import { bookService } from "../services";
+import prisma from "../db/prisma";
 
 type BookParams = {
   id: string;
 };
 
-export function getBooks(req: Request, res: Response) {
-  res.json({ data: bookService.getAll() });
+export async function getBooks(req: Request, res: Response) {
+  const books = await prisma.book.findMany();
+  res.json({ data: books });
 }
 
-export function getBookById(req: Request<BookParams>, res: Response) {
-  const result = bookService.getById(req.params.id);
+export async function getBookById(req: Request<BookParams>, res: Response) {
+  const book = await prisma.book.findUnique({ where: { id: req.params.id } });
 
-  if (result.error) {
-    return res.status(result.status).json({ error: result.error });
+  if (book === null) {
+    return res.status(404).json({ error: "Book not found" });
   }
 
-  res.json({ data: result.data });
+  res.json({ data: book });
 }
 
-export function createBook(
+export async function createBook(
   req: Request<{}, {}, CreateBookDto>,
   res: Response,
 ) {
-  const result = bookService.create(req.body);
+  const { title, author, year, isbn } = req.body;
 
-  if (result.error) {
-    return res.status(result.status).json({ error: result.error });
+  const existingBook = await prisma.book.findUnique({ where: { isbn } });
+  if (existingBook !== null) {
+    return res.status(400).json({ error: "Book with this ISBN already exists" });
   }
 
-  res.status(201).json({ data: result.data });
+  const book = await prisma.book.create({
+    data: { title, author, year, isbn, available: true },
+  });
+
+  res.status(201).json({ data: book });
 }
 
-export function updateBook(
+export async function updateBook(
   req: Request<BookParams, {}, UpdateBookDto>,
   res: Response,
 ) {
-  const result = bookService.update(req.params.id, req.body);
+  const { title, author, year, isbn } = req.body;
 
-  if (result.error) {
-    return res.status(result.status).json({ error: result.error });
+  const existingBook = await prisma.book.findUnique({
+    where: { id: req.params.id },
+  });
+
+  if (existingBook === null) {
+    return res.status(404).json({ error: "Book not found" });
   }
 
-  res.json({ data: result.data });
+  const isbnConflict = await prisma.book.findFirst({
+    where: { isbn, NOT: { id: req.params.id } },
+  });
+  if (isbnConflict !== null) {
+    return res.status(400).json({ error: "Book with this ISBN already exists" });
+  }
+
+  const updated = await prisma.book.update({
+    where: { id: req.params.id },
+    data: { title, author, year, isbn },
+  });
+
+  res.json({ data: updated });
 }
 
-export function deleteBook(req: Request<BookParams>, res: Response) {
-  const result = bookService.delete(req.params.id);
+export async function deleteBook(req: Request<BookParams>, res: Response) {
+  const book = await prisma.book.findUnique({ where: { id: req.params.id } });
 
-  if (result.error) {
-    return res.status(result.status).json({ error: result.error });
+  if (book === null) {
+    return res.status(404).json({ error: "Book not found" });
   }
+
+  await prisma.book.delete({ where: { id: req.params.id } });
 
   res.status(204).end();
 }
