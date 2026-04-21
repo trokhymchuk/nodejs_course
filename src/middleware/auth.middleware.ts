@@ -54,10 +54,16 @@ export function auth(req: Request, res: Response, next: NextFunction) {
       return next(err);
     }
 
+    const payload = decoded as JWTPayload;
+
+    if (!payload.id || !payload.email || !payload.role) {
+      return res.status(401).json({ message: "Access token is not valid" });
+    }
+
     (req as RequestWithUser).user = {
-      id: (decoded as JWTPayload).id,
-      email: (decoded as JWTPayload).email,
-      role: (decoded as JWTPayload).role,
+      id: payload.id,
+      email: payload.email,
+      role: payload.role,
     };
 
     next();
