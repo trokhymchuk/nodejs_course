@@ -1,0 +1,30 @@
+meta {
+  name: Create Booking
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/bookings
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "equipmentId": {{equipmentId}},
+    "startDate": "2026-05-01T10:00:00.000Z",
+    "endDate": "2026-05-05T10:00:00.000Z",
+    "notes": "Please have equipment ready by 9am"
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body.data?.id) {
+    bru.setEnvVar("bookingId", res.body.data.id);
+  }
+}

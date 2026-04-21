@@ -1,0 +1,30 @@
+meta {
+  name: Create Equipment
+  type: http
+  seq: 4
+}
+
+post {
+  url: {{baseUrl}}/equipment
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "name": "Fischer RC4 Skis",
+    "description": "Professional alpine skis, 170cm. Ideal for intermediate and advanced skiers.",
+    "category": "SKIS",
+    "pricePerDay": 150
+  }
+}
+
+script:post-response {
+  if (res.status === 201 && res.body.data?.id) {
+    bru.setEnvVar("equipmentId", res.body.data.id);
+  }
+}

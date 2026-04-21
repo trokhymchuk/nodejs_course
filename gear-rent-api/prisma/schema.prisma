@@ -1,0 +1,81 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+enum UserRole {
+  ADMIN
+  RENTER
+  RENTEE
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  ACTIVE
+  COMPLETED
+  CANCELLED
+}
+
+enum EquipmentCategory {
+  SKIS
+  SNOWBOARD
+  BOOTS
+  POLES
+  HELMET
+  GOGGLES
+  CLOTHING
+  OTHER
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  name      String
+  email     String   @unique
+  password  String
+  role      UserRole @default(RENTEE)
+  phone     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  equipment Equipment[]
+  bookings  Booking[]
+}
+
+model Equipment {
+  id          Int               @id @default(autoincrement())
+  name        String
+  description String
+  uniqueCode  String            @unique
+  qrCode      String
+  photoUrl    String?
+  category    EquipmentCategory @default(OTHER)
+  pricePerDay Float
+  isAvailable Boolean           @default(true)
+  ownerId     Int
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+
+  owner    User      @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+}
+
+model Booking {
+  id          Int           @id @default(autoincrement())
+  equipmentId Int
+  renteeId    Int
+  startDate   DateTime
+  endDate     DateTime
+  totalPrice  Float
+  status      BookingStatus @default(PENDING)
+  notes       String?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  equipment Equipment @relation(fields: [equipmentId], references: [id], onDelete: Cascade)
+  rentee    User      @relation(fields: [renteeId], references: [id], onDelete: Cascade)
+}

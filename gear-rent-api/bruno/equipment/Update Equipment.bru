@@ -1,0 +1,23 @@
+meta {
+  name: Update Equipment
+  type: http
+  seq: 5
+}
+
+patch {
+  url: {{baseUrl}}/equipment/{{equipmentId}}
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "pricePerDay": 120,
+    "isAvailable": true,
+    "description": "Updated description for the skis."
+  }
+}

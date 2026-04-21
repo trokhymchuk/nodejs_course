@@ -1,0 +1,15 @@
+meta {
+  name: Cancel Booking
+  type: http
+  seq: 5
+}
+
+delete {
+  url: {{baseUrl}}/bookings/{{bookingId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

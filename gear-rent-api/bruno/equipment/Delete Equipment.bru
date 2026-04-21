@@ -1,0 +1,15 @@
+meta {
+  name: Delete Equipment
+  type: http
+  seq: 7
+}
+
+delete {
+  url: {{baseUrl}}/equipment/{{equipmentId}}
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
