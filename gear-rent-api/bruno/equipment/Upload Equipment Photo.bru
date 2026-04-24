@@ -6,7 +6,7 @@ meta {
 
 post {
   url: {{baseUrl}}/equipment/{{equipmentId}}/photo
-  body: multipart-form
+  body: file
   auth: bearer
 }
 
@@ -15,5 +15,9 @@ auth:bearer {
 }
 
 body:multipart-form {
-  photo: @file()
+  photo: @file(/home/atrokhymchuk/tmpfiles/Lenna.png)
+}
+
+body:file {
+  file: @file(/home/atrokhymchuk/tmpfiles/Lenna.png) @contentType(image/png)
 }

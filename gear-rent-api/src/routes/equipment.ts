@@ -3,7 +3,7 @@ import * as EquipmentController from "../controllers/equipmentController";
 import { auth } from "../middleware/auth";
 import { requireRole } from "../middleware/roles";
 import { validate } from "../middleware/validate";
-import { upload } from "../middleware/upload";
+import { upload, resizePhoto } from "../middleware/upload";
 import { createEquipmentSchema, updateEquipmentSchema } from "../schemas/equipment.schema";
 
 const router = express.Router();
@@ -38,6 +38,7 @@ router.post(
   auth,
   requireRole("RENTER", "ADMIN"),
   upload.single("photo"),
+  resizePhoto,
   EquipmentController.uploadEquipmentPhoto,
 );
 

@@ -1,0 +1,7 @@
+services:
+  api:
+    image: gear-rent-api
+    platform: linux/arm64
+    ports:
+      - "60000:3000"
+    restart: unless-stopped

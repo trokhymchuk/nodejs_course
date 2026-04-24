@@ -1,0 +1,24 @@
+meta {
+  name: Login admin
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/auth/login
+  body: json
+  auth: none
+}
+
+body:json {
+  {
+    "email": "artem@trokhymchuk.com",
+    "password": "password"
+  }
+}
+
+script:post-response {
+  if (res.status === 200 && res.body.data?.accessToken) {
+    bru.setVar("accessToken", res.body.data.accessToken);
+  }
+}

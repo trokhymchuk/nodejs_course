@@ -1,20 +1,8 @@
 import path from "node:path";
 import { randomUUID } from "node:crypto";
 import multer from "multer";
-
-const storage = multer.diskStorage({
-  destination: (_req, _file, cb) => {
-    const destination = path.resolve(__dirname, "uploads");
-    cb(null, destination);
-  },
-  filename: (_req, file, cb) => {
-    const extname = path.extname(file.originalname);
-    const basename = path.basename(file.originalname, extname);
-    const uuid = randomUUID();
-    const filename = `${basename}.${uuid}${extname}`;
-    cb(null, filename);
-  },
-});
+import sharp from "sharp";
+import type { Request, Response, NextFunction } from "express";
 
 const fileFilter = (
   _req: Express.Request,
@@ -29,4 +17,25 @@ const fileFilter = (
   }
 };
 
-export const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
+export const upload = multer({
+  storage: multer.memoryStorage(),
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 },
+});
+
+export async function resizePhoto(req: Request, _res: Response, next: NextFunction) {
+  if (req.file === undefined) return next();
+
+  const filename = `${randomUUID()}.webp`;
+  const outputPath = path.resolve(__dirname, "..", "uploads", filename);
+
+  await sharp(req.file.buffer)
+    .resize({ width: 1200, withoutEnlargement: true })
+    .webp({ quality: 85 })
+    .toFile(outputPath);
+
+  req.file.filename = filename;
+  req.file.path = outputPath;
+
+  next();
+}
